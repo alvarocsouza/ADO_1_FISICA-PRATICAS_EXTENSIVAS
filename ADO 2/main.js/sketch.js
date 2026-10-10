@@ -362,8 +362,8 @@ function desenharSistemaPlano() {
   textStyle(NORMAL);
 
   // ----- Pontos-chave do desenho -----
-  const rampaBaseX = dx + 60;
-  const rampaBaseY = dy + dh - 60;
+  const rampaBaseX = dx + 70;
+  const rampaBaseY = dy + dh - 180;
 
   const thetaVisual = Math.min(theta, 45);
   const rampaComp = 260;
@@ -590,8 +590,8 @@ function desenharSistemaPlano() {
   text("Gráfico x(t) e v(t)", gx + 15, gy + 15);
   textStyle(NORMAL);
 
-  const origemX = gx + 55;
-  const origemY = gy + gh / 2 + 20;
+  const origemX = gx + 70;
+  const origemY = gy + gh / 2 + 120;
 
   stroke(COR_PRETO[0], COR_PRETO[1], COR_PRETO[2]);
   strokeWeight(1.5);
