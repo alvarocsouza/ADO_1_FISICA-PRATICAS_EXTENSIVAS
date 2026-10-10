@@ -354,7 +354,6 @@ function desenharSistemaPlano() {
   fill(COR_BRANCO[0], COR_BRANCO[1], COR_BRANCO[2]);
   rect(dx, dy, dw, dh, 10);
 
-  // Título da área
   fill(COR_PRETO[0], COR_PRETO[1], COR_PRETO[2]);
   textAlign(LEFT, TOP);
   textSize(14);
@@ -363,25 +362,21 @@ function desenharSistemaPlano() {
   textStyle(NORMAL);
 
   // ----- Pontos-chave do desenho -----
-  // Base da rampa: canto inferior esquerdo
-  const rampaBaseX = dx + 75;
-  const rampaBaseY = dy + dh - 190;
+  const rampaBaseX = dx + 60;
+  const rampaBaseY = dy + dh - 60;
 
-  // Topo da rampa: desloca em x e y conforme θ
-  // Em vez de usar o θ do usuário (que pode chegar a 80°), usamos um
-  // ângulo visual fixo (max 45°) para o desenho caber.
   const thetaVisual = Math.min(theta, 45);
-  const rampaComp = 260;  // comprimento fixo em pixels
+  const rampaComp = 260;
 
   const rampaTopoX = rampaBaseX + rampaComp * cos(radians(thetaVisual));
   const rampaTopoY = rampaBaseY - rampaComp * sin(radians(thetaVisual));
 
-  // ----- Desenha a rampa -----
+  // ----- Rampa -----
   stroke(COR_PRETO[0], COR_PRETO[1], COR_PRETO[2]);
   strokeWeight(3);
   line(rampaBaseX, rampaBaseY, rampaTopoX, rampaTopoY);
 
-  // Chão horizontal embaixo da rampa
+  // Chão
   stroke(COR_CINZA[0], COR_CINZA[1], COR_CINZA[2]);
   strokeWeight(1);
   line(rampaBaseX - 20, rampaBaseY, rampaBaseX + 30, rampaBaseY);
@@ -396,26 +391,14 @@ function desenharSistemaPlano() {
   text("θ", rampaBaseX + 22, rampaBaseY - 15);
 
   // ----- Posição do bloco ao longo da rampa -----
-  // posicaoBloco vai de 0 a COMPRIMENTO_RAMPA (metros).
-  // Mapeia para fração de [0, 1] e depois para pixels ao longo da rampa.
   const fracao = constrain(posicaoBloco / COMPRIMENTO_RAMPA, 0, 1);
-
-  // O bloco sobe OU desce dependendo do sinal de a
   const direcao = Math.sign(a) || 0;
 
-  // Fio inextensível: o bloco m1 move para um lado e m2 move para o outro
-  // Se a > 0 (m2 desce), o bloco m1 SOBE a rampa em direção à polia
-  // Se a < 0 (m1 desce), o bloco m1 DESCE em direção à base
   let posFrac;
-  if (direcao > 0) {
-    posFrac = fracao;                 // m1 sobe
-  } else if (direcao < 0) {
-    posFrac = -fracao;                // m1 desce
-  } else {
-    posFrac = 0;                      // equilíbrio
-  }
+  if (direcao > 0) posFrac = fracao;
+  else if (direcao < 0) posFrac = -fracao;
+  else posFrac = 0;
 
-  // Ponto do bloco na rampa (em coordenadas de pixel)
   const blocoX = rampaBaseX + (rampaTopoX - rampaBaseX) * constrain(0.5 + posFrac * 0.5, 0.05, 0.95);
   const blocoY = rampaBaseY + (rampaTopoY - rampaBaseY) * constrain(0.5 + posFrac * 0.5, 0.05, 0.95);
 
@@ -428,42 +411,31 @@ function desenharSistemaPlano() {
   circle(poliaX, poliaY, 20);
 
   // ----- Massa m2 suspensa -----
-  // O fio vai da polia para baixo (vertical).
-  // Deslocamento de m2 é IGUAL em módulo ao de m1 (fio inextensível).
-  const m2BaseY = poliaY + 150;   // posição "de referência" em equilíbrio
+  const m2BaseY = poliaY + 150;
   let m2Y;
-  if (direcao > 0) {
-    // m1 sobe → m2 desce
-    m2Y = m2BaseY + fracao * 100;
-  } else if (direcao < 0) {
-    // m1 desce → m2 sobe
-    m2Y = m2BaseY - fracao * 100;
-  } else {
-    m2Y = m2BaseY;
-  }
+  if (direcao > 0) m2Y = m2BaseY + fracao * 100;
+  else if (direcao < 0) m2Y = m2BaseY - fracao * 100;
+  else m2Y = m2BaseY;
   m2Y = constrain(m2Y, poliaY + 40, poliaY + 250);
 
-  // ----- Desenha o fio -----
+  // ----- Fio -----
   stroke(COR_PRETO[0], COR_PRETO[1], COR_PRETO[2]);
   strokeWeight(1.5);
-  // Trecho 1: do bloco até a polia
   line(blocoX, blocoY, poliaX, poliaY);
-  // Trecho 2: da polia para baixo até m2
   line(poliaX, poliaY, poliaX, m2Y);
 
   // ----- Bloco m1 -----
   noStroke();
   fill(COR_AZUL[0], COR_AZUL[1], COR_AZUL[2]);
-  const tamBloco = 26 + m1 * 1.5;   // tamanho proporcional à massa (visual)
+  const tamBloco = 26 + m1 * 1.2;
   rectMode(CENTER);
   push();
   translate(blocoX, blocoY);
-  rotate(radians(thetaVisual));
+  rotate(radians(60));
   rect(0, 0, tamBloco, tamBloco * 0.7, 3);
   pop();
   rectMode(CORNER);
 
-  // Rótulo m1
   fill(COR_BRANCO[0], COR_BRANCO[1], COR_BRANCO[2]);
   textAlign(CENTER, CENTER);
   textSize(11);
@@ -475,7 +447,7 @@ function desenharSistemaPlano() {
   // ----- Massa m2 -----
   noStroke();
   fill(COR_VERDE[0], COR_VERDE[1], COR_VERDE[2]);
-  const tamM2 = 20 + m2 * 1.5;
+  const tamM2 = 20 + m2 * 1.2;
   rectMode(CENTER);
   rect(poliaX, m2Y, tamM2, tamM2, 3);
   rectMode(CORNER);
@@ -488,60 +460,111 @@ function desenharSistemaPlano() {
   textStyle(NORMAL);
   textAlign(LEFT, TOP);
 
-  // ----- Vetores de força sobre m1 -----
-  const fatorSeta = 0.6;   // pixels por Newton (ajustável)
+  // ===============================
+  // VETORES DE FORÇA sobre m1
+  // ===============================
+  // Fator de escala: pixels por Newton.
+  // Usamos uma referência dinâmica para as setas não ficarem gigantes
+  // quando o peso é grande. Normalizamos pelo maior módulo de força.
+  const pesoM1 = m1 * G;
+  const pesoM2 = m2 * G;
+  const atritoMag = (abs(a) > 1e-6) ? mu_k * N : mu_s * N;
 
-  // Peso (m1·g) — sempre para baixo
-  const pesoMag = m1 * G;
-  const pesoPx = pesoMag * fatorSeta;
+  const forcaMax = Math.max(pesoM1, N, T, atritoMag, pesoM2, 1);
+  // 80 pixels é o comprimento máximo de uma seta
+  const fatorSeta = 80 / forcaMax;
+
+  const angRampa = radians(thetaVisual);
+  const uxRampa = cos(angRampa);
+  const uyRampa = -sin(angRampa);
+  const uxNormal = cos(angRampa + PI / 2);
+  const uyNormal = - sin(angRampa + PI / 2);
+
+  // --- Peso P (vermelho, vertical para baixo) ---
+  const pPeso = pesoM1 * fatorSeta;
   desenharSeta(
     blocoX, blocoY,
-    blocoX, blocoY + pesoPx,
+    blocoX, blocoY + pPeso,
     COR_VERMELHO
   );
+  desenharRotuloVetor(blocoX - 15, blocoY + pPeso + 5, "P", COR_VERMELHO);
 
-  // Normal — perpendicular à rampa, apontando para fora
-  const normalMag = N;
-  const normalPx = normalMag * fatorSeta;
-  const normalAng = radians(thetaVisual) - PI / 2;
+  // --- Normal N (azul, perpendicular à rampa para fora) ---
+  const pNormal = N * fatorSeta;
   desenharSeta(
     blocoX, blocoY,
-    blocoX + normalPx * cos(normalAng),
-    blocoY + normalPx * sin(normalAng),
+    blocoX + pNormal * uxNormal,
+    blocoY + pNormal * uyNormal,
     COR_AZUL
   );
-
-  // Tração — ao longo do fio, apontando para a polia
-  const tracaoPx = T * fatorSeta;
-  const angFio = atan2(poliaY - blocoY, poliaX - blocoX);
-  desenharSeta(
-    blocoX, blocoY,
-    blocoX + tracaoPx * cos(angFio),
-    blocoY + tracaoPx * sin(angFio),
-    COR_VERDE
+  desenharRotuloVetor(
+    blocoX + pNormal * uxNormal + 8 * uxNormal,
+    blocoY + pNormal * uyNormal + 8 * uyNormal,
+    "N", COR_AZUL
   );
 
-  // Atrito — oposto ao movimento (ou tentativa de movimento)
-  if (abs(a) > 1e-6 || abs(Fmot) > mu_s * N) {
-    const atritoMag = (abs(a) > 1e-6) ? mu_k * N : mu_s * N;
-    const atritoPx = atritoMag * fatorSeta;
-    // Direção: oposta ao movimento (mesma direção do fio, mas sentido oposto)
-    const sentido = (a > 0) ? -1 : 1;
+  // --- Tração T (verde, ao longo do fio, em direção à polia) ---
+  const angFio = atan2(poliaY - blocoY, poliaX - blocoX);
+  const pTracao = T * fatorSeta;
+  desenharSeta(
+    blocoX, blocoY,
+    blocoX + pTracao * cos(angFio),
+    blocoY + pTracao * sin(angFio),
+    COR_VERDE
+  );
+  desenharRotuloVetor(
+    blocoX + pTracao * cos(angFio) + 8 * cos(angFio),
+    blocoY + pTracao * sin(angFio) + 8 * sin(angFio),
+    "T", COR_VERDE
+  );
+
+  // --- Atrito fat (laranja, ao longo da rampa, oposto ao movimento) ---
+  if (atritoMag > 0.1) {
+    const pAtrito = atritoMag * fatorSeta;
+    // Direção do atrito: oposta à tentativa de movimento do bloco.
+    // Se a > 0 (m1 sobe), atrito aponta para baixo (oposto ao uxRampa).
+    // Se a < 0 (m1 desce), atrito aponta para cima (igual ao uxRampa).
+    // Em equilíbrio, o atrito se opõe à força motriz.
+    let sinalAtrito;
+    if (abs(a) > 1e-6) {
+      sinalAtrito = (a > 0) ? -1 : 1;
+    } else {
+      // Equilíbrio: atrito equilibra F_motriz
+      sinalAtrito = (Fmot > 0) ? -1 : 1;
+    }
     desenharSeta(
       blocoX, blocoY,
-      blocoX + sentido * atritoPx * cos(angFio),
-      blocoY + sentido * atritoPx * sin(angFio),
+      blocoX + sinalAtrito * pAtrito * uxRampa,
+      blocoY + sinalAtrito * pAtrito * uyRampa,
       COR_LARANJA
+    );
+    desenharRotuloVetor(
+      blocoX + sinalAtrito * pAtrito * uxRampa + 8 * sinalAtrito * uxRampa,
+      blocoY + sinalAtrito * pAtrito * uyRampa + 8 * sinalAtrito * uyRampa,
+      "fat", COR_LARANJA
     );
   }
 
-  // ----- Legenda dos vetores -----
-  const legX = dx + 15;
-  const legY = dy + dh - 110;
-  desenharTextoLegenda(legX - 10, legY + 20, COR_VERMELHO, "Peso (m1·g)");
-  desenharTextoLegenda(legX - 10, legY + 40, COR_AZUL, "Normal (N)");
-  desenharTextoLegenda(legX - 10, legY + 60, COR_VERDE, "Tração (T)");
-  desenharTextoLegenda(legX - 10, legY + 80, COR_LARANJA, "Atrito (f)");
+  // ===============================
+  // VETORES DE FORÇA sobre m2
+  // ===============================
+  // --- Tração T (verde, para cima) ---
+  const pTracaoM2 = T * fatorSeta;
+  desenharSeta(
+    poliaX, m2Y,
+    poliaX, m2Y - pTracaoM2,
+    COR_VERDE
+  );
+  desenharRotuloVetor(poliaX + 8, m2Y - pTracaoM2 - 10, "T", COR_VERDE);
+
+  // --- Peso P2 (vermelho, para baixo) ---
+  const pPesoM2 = pesoM2 * fatorSeta;
+  desenharSeta(
+    poliaX, m2Y,
+    poliaX, m2Y + pPesoM2,
+    COR_VERMELHO
+  );
+  desenharRotuloVetor(poliaX + 8, m2Y + pPesoM2 + 5, "P2", COR_VERMELHO);
 
   // ----- Cronômetro -----
   fill(COR_PRETO[0], COR_PRETO[1], COR_PRETO[2]);
@@ -552,7 +575,7 @@ function desenharSistemaPlano() {
   textAlign(LEFT, TOP);
 
   // ===============================
-  // Área 2 — gráfico x(t)/v(t) (direita)
+  // Área 2 — gráfico x(t)/v(t)
   // ===============================
   const gx = 780, gy = 90, gw = 380, gh = 480;
 
@@ -567,9 +590,8 @@ function desenharSistemaPlano() {
   text("Gráfico x(t) e v(t)", gx + 15, gy + 15);
   textStyle(NORMAL);
 
-  // Eixos
-  const origemX = gx + 70;
-  const origemY = gy + gh / 2 + 60;
+  const origemX = gx + 55;
+  const origemY = gy + gh / 2 + 20;
 
   stroke(COR_PRETO[0], COR_PRETO[1], COR_PRETO[2]);
   strokeWeight(1.5);
@@ -582,7 +604,6 @@ function desenharSistemaPlano() {
   text("t (s)", gx + gw - 45, origemY + 6);
   text("x (m), v (m/s)", origemX + 6, gy + 55);
 
-  // Cálculo da curva — até onde o tempo já chegou (se em movimento) ou 5s fixos
   const tMax = (regime === "MOVIMENTO" && !blocoParou)
     ? Math.max(tempoSim + 1, 3)
     : 5.0;
@@ -598,18 +619,15 @@ function desenharSistemaPlano() {
   for (let i = 0; i < tArr.length; i++) {
     maxAbs = Math.max(maxAbs, abs(xArr[i]), abs(vArr[i]));
   }
-  // Limitar para o gráfico não "comprimir" muito com o tempo
   maxAbs = Math.min(maxAbs, COMPRIMENTO_RAMPA * 2);
 
   const escalaY = (gh - 130) / (2 * maxAbs);
   const escalaX = (gw - 90) / tMax;
 
-  // Linha zero
   stroke(COR_CINZA_CLARO[0], COR_CINZA_CLARO[1], COR_CINZA_CLARO[2]);
   strokeWeight(0.8);
   line(origemX, origemY, gx + gw - 20, origemY);
 
-  // Curva x(t)
   noFill();
   stroke(COR_AZUL[0], COR_AZUL[1], COR_AZUL[2]);
   strokeWeight(2);
@@ -622,7 +640,6 @@ function desenharSistemaPlano() {
   }
   endShape();
 
-  // Curva v(t)
   stroke(COR_LARANJA[0], COR_LARANJA[1], COR_LARANJA[2]);
   strokeWeight(2);
   beginShape();
@@ -634,7 +651,6 @@ function desenharSistemaPlano() {
   }
   endShape();
 
-  // Marcador do instante atual
   if (regime === "MOVIMENTO" && tempoSim <= tMax) {
     const pxAtual = origemX + tempoSim * escalaX;
     stroke(COR_PRETO[0], COR_PRETO[1], COR_PRETO[2]);
@@ -644,7 +660,6 @@ function desenharSistemaPlano() {
     drawingContext.setLineDash([]);
   }
 
-  // Legenda
   const lx = gx + 20;
   const ly = gy + 55;
   noStroke();
@@ -661,7 +676,7 @@ function desenharSistemaPlano() {
   textAlign(LEFT, TOP);
 
   // ===============================
-  // Painel numérico inferior (largura total das duas áreas)
+  // Painel numérico inferior
   // ===============================
   const px = 380, py = 590, pw = 780, ph = 130;
   fill(COR_BRANCO[0], COR_BRANCO[1], COR_BRANCO[2]);
@@ -872,6 +887,18 @@ function desenharSeta(x1, y1, x2, y2, cor) {
   triangle(0, 0, -tamCabeca, -tamCabeca * 0.5, -tamCabeca, tamCabeca * 0.5);
   pop();
 
+  pop();
+}
+
+function desenharRotuloVetor(x, y, texto, cor) {
+  push();
+  noStroke();
+  fill(cor[0], cor[1], cor[2]);
+  textAlign(CENTER, CENTER);
+  textSize(13);
+  textStyle(BOLD);
+  text(texto, x, y);
+  textStyle(NORMAL);
   pop();
 }
 
